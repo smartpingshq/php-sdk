@@ -3,21 +3,43 @@
 namespace Smartpings\Messaging;
 
 use Exception;
-use Psr\Http\Client\HttpClientInterface;
+use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\HttpFactory;
+use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 
 class SmartpingsService extends LoggingService
 {
+    public const DEFAULT_API_URL = 'https://api.smartpings.com/api/';
+
     public function __construct(
-        protected HttpClientInterface $client,
+        protected ClientInterface $client,
         protected RequestFactoryInterface $requestFactory,
         protected StreamFactoryInterface $streamFactory,
         protected string $apiUrl,
         protected string $clientId,
         protected string $secretId
     ) {}
+
+    public static function create(
+        string $clientId,
+        string $secretId,
+        string $apiUrl = self::DEFAULT_API_URL
+    ): self {
+        $client = new Client;
+        $httpFactory = new HttpFactory;
+
+        return new self(
+            $client,
+            $httpFactory,
+            $httpFactory,
+            $apiUrl,
+            $clientId,
+            $secretId
+        );
+    }
 
     /**
      * @throws Exception
@@ -44,14 +66,16 @@ class SmartpingsService extends LoggingService
     /**
      * @throws Exception
      */
-    public function sendSms(string $message, string $phone): ResponseInterface
+    public function sendSms(string $message, string|array $phones): ResponseInterface
     {
+        $phones = is_array($phones) ? $phones : [$phones];
+
         $response = $this->sendRequest('POST', 'v1/ping/message', [
             'message' => $message,
-            'destination' => [$phone],
+            'destination' => $phones,
         ]);
 
-        return $this->handleResponse($response, 'Failed to send SMS', compact('phone', 'message'));
+        return $this->handleResponse($response, 'Failed to send SMS', ['phones' => $phones, 'message' => $message]);
     }
 
     /**
@@ -59,7 +83,7 @@ class SmartpingsService extends LoggingService
      */
     private function sendRequest(string $method, string $uri, array $data): ResponseInterface
     {
-        $request = $this->requestFactory->createRequest($method, $this->apiUrl . $uri);
+        $request = $this->requestFactory->createRequest($method, $this->apiUrl.$uri);
         $request = $request->withHeader('Content-Type', 'application/json');
         $request = $request->withHeader('Accept', 'application/json');
         $request = $request->withHeader('X-client-id', $this->clientId);
