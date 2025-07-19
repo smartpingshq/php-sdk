@@ -93,41 +93,56 @@ $response = $service->sendSms('Your message here', 'recipient-phone-number');
 
 ## Laravel Integration
 
-This package includes a service provider for easy integration with Laravel.
+This package includes a service provider for seamless integration with Laravel.
 
-1.  **Publish the configuration file (optional):**
+### How It Works
 
-    ```bash
-    php artisan vendor:publish --provider="Smartpings\Messaging\SmartpingsServiceProvider"
-    ```
+The package will automatically register a service provider that instantiates the `SmartpingsService` for you. The provider uses the static `create()` method and configures it with the credentials you set in your `.env` file.
 
-2.  **Add your credentials to `.env`:**
+This allows you to inject the `SmartpingsService` directly into your controllers or other services, and it will be ready to use.
+
+### Configuration
+
+1.  **Add your credentials to your `.env` file:**
 
     ```env
     SMARTPINGS_CLIENT_ID=your-client-id
     SMARTPINGS_SECRET_ID=your-secret-id
     ```
 
-3.  **Use the service:**
+2.  **Publish the configuration file (optional):**
 
-    You can now inject the `SmartpingsService` into your controllers or services.
+    If you need to customize the API URL or other settings, you can publish the configuration file:
 
-    ```php
-    use Smartpings\Messaging\SmartpingsService;
+    ```bash
+    php artisan vendor:publish --provider="Smartpings\Messaging\SmartpingsServiceProvider"
+    ```
 
-    class YourController
+    This will create a `config/smartpings.php` file in your application.
+
+### Usage Example
+
+Once configured, you can inject the `SmartpingsService` anywhere in your Laravel application.
+
+```php
+use Smartpings\Messaging\SmartpingsService;
+
+class YourController
+{
+    public function __construct(private SmartpingsService $smartpingsService)
     {
-        public function __construct(private SmartpingsService $smartpingsService)
-        {
-        }
+    }
 
-        public function sendMessage()
-        {
-            $response = $this->smartpingsService->sendSms('Your message here', 'recipient-phone-number');
+    public function sendMessage()
+    {
+        $response = $this->smartpingsService->sendSms(
+            'Your message here',
+            'recipient-phone-number'
+        );
 
-            if ($response->getStatusCode() === 200) {
-                // Message sent successfully
-            }
+        if ($response->getStatusCode() === 200) {
+            // Message sent successfully
         }
     }
-    ```
+}
+```

@@ -29,5 +29,12 @@
         "psr-4": {
             "Smartpings\\Messaging\\": "src/"
         }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Smartpings\\Messaging\\SmartpingsServiceProvider"
+            ]
+        }
     }
 }
