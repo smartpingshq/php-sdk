@@ -23,7 +23,7 @@
         "test": "vendor/bin/phpunit",
         "test-coverage": "vendor/bin/phpunit --coverage-html coverage",
         "lint": "vendor/bin/pint --test",
-        "lint:fix": "vendor/bin/pint --test --fix"
+        "lint:fix": "vendor/bin/pint"
     },
     "autoload": {
         "psr-4": {
