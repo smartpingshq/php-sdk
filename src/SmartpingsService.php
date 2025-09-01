@@ -44,8 +44,16 @@ class SmartpingsService extends LoggingService
     /**
      * @throws Exception
      */
-    public function verifyContact(string $type, string $contact, ?string $code = null): ResponseInterface
-    {
+    public function verifyContact(
+        string $type,
+        string $contact,
+        ?string $code = null,
+        ?string $name = null,
+        ?string $redirectUrl = null,
+        ?string $emailToken = null,
+        ?int $expirationMinutes = null,
+        ?array $promoteToListIds = null
+    ): ResponseInterface {
         $data = ['type' => $type];
 
         if ($type === 'phone') {
@@ -58,9 +66,91 @@ class SmartpingsService extends LoggingService
             $data['code'] = $code;
         }
 
+        if ($name) {
+            $data['name'] = $name;
+        }
+
+        if ($redirectUrl) {
+            $data['redirectUrl'] = $redirectUrl;
+        }
+
+        if ($emailToken) {
+            $data['emailToken'] = $emailToken;
+        }
+
+        if ($expirationMinutes !== null) {
+            $data['expirationMinutes'] = $expirationMinutes;
+        }
+
+        if ($promoteToListIds !== null) {
+            $data['promoteToListIds'] = $promoteToListIds;
+        }
+
         $response = $this->sendRequest('POST', 'v1/ping/verify', $data);
 
         return $this->handleResponse($response, "Failed to send OTP to {$type}", compact('contact', 'type'));
+    }
+
+    /**
+     * Send phone verification code
+     *
+     * @throws Exception
+     */
+    public function sendPhoneVerification(
+        string $phone,
+        ?string $name = null,
+        ?int $expirationMinutes = null,
+        ?array $promoteToListIds = null
+    ): ResponseInterface {
+        return $this->verifyContact(
+            type: 'phone',
+            contact: $phone,
+            name: $name,
+            expirationMinutes: $expirationMinutes,
+            promoteToListIds: $promoteToListIds
+        );
+    }
+
+    /**
+     * Verify phone with code
+     *
+     * @throws Exception
+     */
+    public function verifyPhoneWithCode(string $phone, string $code): ResponseInterface
+    {
+        return $this->verifyContact(type: 'phone', contact: $phone, code: $code);
+    }
+
+    /**
+     * Send email verification
+     *
+     * @throws Exception
+     */
+    public function sendEmailVerification(
+        string $email,
+        ?string $name = null,
+        ?string $redirectUrl = null,
+        ?int $expirationMinutes = null,
+        ?array $promoteToListIds = null
+    ): ResponseInterface {
+        return $this->verifyContact(
+            type: 'email',
+            contact: $email,
+            name: $name,
+            redirectUrl: $redirectUrl,
+            expirationMinutes: $expirationMinutes,
+            promoteToListIds: $promoteToListIds
+        );
+    }
+
+    /**
+     * Verify email with token
+     *
+     * @throws Exception
+     */
+    public function verifyEmailWithToken(string $email, string $emailToken): ResponseInterface
+    {
+        return $this->verifyContact(type: 'email', contact: $email, emailToken: $emailToken);
     }
 
     /**
