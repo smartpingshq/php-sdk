@@ -141,7 +141,7 @@ class SmartpingsServiceTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
     }
 
-    public function test_it_can_verify_email_with_token()
+    public function test_it_can_verify_email_with_code()
     {
         $mock = new MockHandler([
             new Response(200, [], json_encode(['status' => 'success'])),
@@ -161,7 +161,7 @@ class SmartpingsServiceTest extends TestCase
             'test-secret-id'
         );
 
-        $response = $service->verifyEmailWithToken('test@example.com', 'abc123token');
+        $response = $service->verifyEmailWithCode('test@example.com', 'abc123token');
 
         $this->assertEquals(200, $response->getStatusCode());
     }

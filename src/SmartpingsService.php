@@ -50,7 +50,6 @@ class SmartpingsService extends LoggingService
         ?string $code = null,
         ?string $name = null,
         ?string $redirectUrl = null,
-        ?string $emailToken = null,
         ?int $expirationMinutes = null,
         ?array $promoteToListIds = null
     ): ResponseInterface {
@@ -72,10 +71,6 @@ class SmartpingsService extends LoggingService
 
         if ($redirectUrl) {
             $data['redirectUrl'] = $redirectUrl;
-        }
-
-        if ($emailToken) {
-            $data['emailToken'] = $emailToken;
         }
 
         if ($expirationMinutes !== null) {
@@ -144,13 +139,13 @@ class SmartpingsService extends LoggingService
     }
 
     /**
-     * Verify email with token
+     * Verify email with code
      *
      * @throws Exception
      */
-    public function verifyEmailWithToken(string $email, string $emailToken): ResponseInterface
+    public function verifyEmailWithCode(string $email, string $code): ResponseInterface
     {
-        return $this->verifyContact(type: 'email', contact: $email, emailToken: $emailToken);
+        return $this->verifyContact(type: 'email', contact: $email, code: $code);
     }
 
     /**
