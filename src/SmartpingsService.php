@@ -149,6 +149,20 @@ class SmartpingsService extends LoggingService
     }
 
     /**
+     * Get contact verification status
+     *
+     * @throws Exception
+     */
+    public function getContactVerificationStatus(string $contact): ResponseInterface
+    {
+        $uri = 'v1/ping/verify/'.urlencode($contact).'/status';
+
+        $response = $this->sendGetRequest($uri);
+
+        return $this->handleResponse($response, 'Failed to get verification status for contact', compact('contact'));
+    }
+
+    /**
      * @throws Exception
      */
     public function sendSms(string $message, string|array $phones): ResponseInterface
@@ -174,6 +188,19 @@ class SmartpingsService extends LoggingService
         $request = $request->withHeader('X-client-id', $this->clientId);
         $request = $request->withHeader('X-secret-id', $this->secretId);
         $request = $request->withBody($this->streamFactory->createStream(json_encode($data)));
+
+        return $this->client->sendRequest($request);
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function sendGetRequest(string $uri): ResponseInterface
+    {
+        $request = $this->requestFactory->createRequest('GET', $this->apiUrl.$uri);
+        $request = $request->withHeader('Accept', 'application/json');
+        $request = $request->withHeader('X-client-id', $this->clientId);
+        $request = $request->withHeader('X-secret-id', $this->secretId);
 
         return $this->client->sendRequest($request);
     }
