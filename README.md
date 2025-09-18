@@ -47,19 +47,60 @@ if ($response->getStatusCode() === 200) {
 }
 ```
 
-### Verify a Contact (Phone or Email)
+### Contact Verification
 
-This method can be used to send a verification code (OTP) to a user's phone or email.
+#### Generic Verification Method
+
+The `verifyContact` method handles both phone and email verification:
 
 ```php
-// Send a verification code to a phone number
+// Send verification codes
 $service->verifyContact('phone', '+15551234567');
-
-// Send a verification code to an email address
 $service->verifyContact('email', 'user@example.com');
 
-// Verify a code that the user has provided
+// Verify with codes
 $service->verifyContact('phone', '+15551234567', 'user-provided-code');
+$service->verifyContact('email', 'user@example.com', 'verification-token');
+
+// With additional options
+$service->verifyContact(
+    type: 'email',
+    contact: 'user@example.com',
+    code: null,
+    name: 'John Doe',
+    redirectUrl: 'https://yourapp.com/verify',
+    expirationMinutes: 15,
+    promoteToListIds: [1, 2, 3]
+);
+```
+
+#### Convenience Methods
+
+For cleaner, type-specific verification:
+
+```php
+// Phone verification
+$service->sendPhoneVerification('+15551234567', 'John Doe');
+$service->verifyPhoneWithCode('+15551234567', '123456');
+
+// Email verification
+$service->sendEmailVerification('user@example.com', 'John Doe');
+$service->verifyEmailWithCode('user@example.com', 'verification-token');
+```
+
+#### Check Verification Status
+
+Monitor verification status for any contact:
+
+```php
+$response = $service->getContactVerificationStatus('user@example.com');
+
+if ($response->getStatusCode() === 200) {
+    $data = json_decode($response->getBody()->getContents(), true)['data'];
+    
+    // Status: 'pending', 'verified', or 'expired'
+    echo "Status: {$data['status']}, Verified: " . ($data['verified'] ? 'Yes' : 'No');
+}
 ```
 
 ## Advanced Usage
