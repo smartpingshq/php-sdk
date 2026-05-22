@@ -186,7 +186,7 @@ class SmartpingsService extends LoggingService
         $request = $request->withHeader('Content-Type', 'application/json');
         $request = $request->withHeader('Accept', 'application/json');
         $request = $request->withHeader('X-client-id', $this->clientId);
-        $request = $request->withHeader('X-secret-id', $this->secretId);
+        $request = $request->withHeader('X-client-secret', $this->secretId);
         $request = $request->withBody($this->streamFactory->createStream(json_encode($data)));
 
         return $this->client->sendRequest($request);
@@ -200,7 +200,7 @@ class SmartpingsService extends LoggingService
         $request = $this->requestFactory->createRequest('GET', $this->apiUrl.$uri);
         $request = $request->withHeader('Accept', 'application/json');
         $request = $request->withHeader('X-client-id', $this->clientId);
-        $request = $request->withHeader('X-secret-id', $this->secretId);
+        $request = $request->withHeader('X-client-secret', $this->secretId);
 
         return $this->client->sendRequest($request);
     }
