@@ -35,7 +35,7 @@ class SmartpingsServiceProvider extends ServiceProvider
             return SmartpingsService::create(
                 $config['client_id'],
                 $config['secret_id'],
-                $config['api_url']
+                $config['api_url'] ?? SmartpingsService::DEFAULT_API_URL
             );
         });
     }
