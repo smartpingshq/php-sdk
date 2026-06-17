@@ -277,4 +277,68 @@ class SmartpingsServiceTest extends TestCase
         $this->assertEquals('verified', $responseData['data']['status']);
         $this->assertTrue($responseData['data']['verified']);
     }
+
+    private function service(MockHandler $mock): SmartpingsService
+    {
+        $httpFactory = new HttpFactory;
+
+        return new SmartpingsService(
+            new Client(['handler' => HandlerStack::create($mock)]),
+            $httpFactory,
+            $httpFactory,
+            'https://example.com/',
+            'test-client-id',
+            'test-secret-id'
+        );
+    }
+
+    public function test_it_can_send_a_whatsapp_text_message()
+    {
+        $mock = new MockHandler([new Response(200, [], json_encode(['data' => []]))]);
+        $service = $this->service($mock);
+
+        $response = $service->sendWhatsAppText('Your code is 1234', '+15551234567');
+
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $request = $mock->getLastRequest();
+        $this->assertEquals('POST', $request->getMethod());
+        $this->assertStringEndsWith('v1/whatsapp/messages', (string) $request->getUri());
+        $this->assertEquals('test-client-id', $request->getHeaderLine('X-Client-Id'));
+
+        $body = json_decode((string) $request->getBody(), true);
+        $this->assertEquals('text', $body['kind']);
+        $this->assertEquals('Your code is 1234', $body['message']);
+        $this->assertEquals(['+15551234567'], $body['destination']);
+    }
+
+    public function test_it_can_send_a_whatsapp_template_message()
+    {
+        $mock = new MockHandler([new Response(200, [], json_encode(['data' => []]))]);
+        $service = $this->service($mock);
+
+        $response = $service->sendWhatsAppTemplate('+15551234567', 'order_confirmation', 'en_US');
+
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $body = json_decode((string) $mock->getLastRequest()->getBody(), true);
+        $this->assertEquals('template', $body['kind']);
+        $this->assertEquals('order_confirmation', $body['template']['name']);
+        $this->assertEquals('en_US', $body['template']['language']);
+        $this->assertArrayNotHasKey('message', $body);
+    }
+
+    public function test_it_can_get_whatsapp_message_status()
+    {
+        $mock = new MockHandler([new Response(200, [], json_encode(['data' => ['status' => 'sent']]))]);
+        $service = $this->service($mock);
+
+        $response = $service->getWhatsAppMessageStatus('msg-slug-123');
+
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $request = $mock->getLastRequest();
+        $this->assertEquals('GET', $request->getMethod());
+        $this->assertStringEndsWith('v1/whatsapp/messages/msg-slug-123', (string) $request->getUri());
+    }
 }

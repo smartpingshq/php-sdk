@@ -178,6 +178,59 @@ class SmartpingsService extends LoggingService
     }
 
     /**
+     * Send a free-form WhatsApp text message (within an open service window).
+     *
+     * @throws Exception
+     */
+    public function sendWhatsAppText(string $message, string|array $phones): ResponseInterface
+    {
+        $phones = is_array($phones) ? $phones : [$phones];
+
+        $response = $this->sendRequest('POST', 'v1/whatsapp/messages', [
+            'message' => $message,
+            'destination' => $phones,
+            'kind' => 'text',
+        ]);
+
+        return $this->handleResponse($response, 'Failed to send WhatsApp message', ['phones' => $phones, 'message' => $message]);
+    }
+
+    /**
+     * Send a pre-approved WhatsApp template message.
+     *
+     * @throws Exception
+     */
+    public function sendWhatsAppTemplate(string|array $phones, string $name, string $language = 'en_US', array $components = []): ResponseInterface
+    {
+        $phones = is_array($phones) ? $phones : [$phones];
+
+        $template = ['name' => $name, 'language' => $language];
+        if ($components !== []) {
+            $template['components'] = $components;
+        }
+
+        $response = $this->sendRequest('POST', 'v1/whatsapp/messages', [
+            'destination' => $phones,
+            'kind' => 'template',
+            'template' => $template,
+        ]);
+
+        return $this->handleResponse($response, 'Failed to send WhatsApp template', ['phones' => $phones, 'template' => $name]);
+    }
+
+    /**
+     * Get the delivery status of a previously sent WhatsApp message.
+     *
+     * @throws Exception
+     */
+    public function getWhatsAppMessageStatus(string $message): ResponseInterface
+    {
+        $response = $this->sendGetRequest('v1/whatsapp/messages/'.urlencode($message));
+
+        return $this->handleResponse($response, 'Failed to get WhatsApp message status', compact('message'));
+    }
+
+    /**
      * @throws Exception
      */
     private function sendRequest(string $method, string $uri, array $data): ResponseInterface
@@ -185,8 +238,8 @@ class SmartpingsService extends LoggingService
         $request = $this->requestFactory->createRequest($method, $this->apiUrl.$uri);
         $request = $request->withHeader('Content-Type', 'application/json');
         $request = $request->withHeader('Accept', 'application/json');
-        $request = $request->withHeader('X-client-id', $this->clientId);
-        $request = $request->withHeader('X-secret-id', $this->secretId);
+        $request = $request->withHeader('X-Client-Id', $this->clientId);
+        $request = $request->withHeader('X-Client-Secret', $this->secretId);
         $request = $request->withBody($this->streamFactory->createStream(json_encode($data)));
 
         return $this->client->sendRequest($request);
@@ -199,8 +252,8 @@ class SmartpingsService extends LoggingService
     {
         $request = $this->requestFactory->createRequest('GET', $this->apiUrl.$uri);
         $request = $request->withHeader('Accept', 'application/json');
-        $request = $request->withHeader('X-client-id', $this->clientId);
-        $request = $request->withHeader('X-secret-id', $this->secretId);
+        $request = $request->withHeader('X-Client-Id', $this->clientId);
+        $request = $request->withHeader('X-Client-Secret', $this->secretId);
 
         return $this->client->sendRequest($request);
     }

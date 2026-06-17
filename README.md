@@ -47,6 +47,28 @@ if ($response->getStatusCode() === 200) {
 }
 ```
 
+### Send a WhatsApp message
+
+Send a free-form text message (only valid inside an open 24-hour service window), a
+pre-approved template message (for business-initiated conversations), or check delivery
+status. Each accepts a single phone number or an array.
+
+```php
+// Free-form text (within an open service window)
+$response = $service->sendWhatsAppText('Your code is 1234', 'recipient-phone-number');
+
+// Pre-approved template (business-initiated)
+$response = $service->sendWhatsAppTemplate(
+    'recipient-phone-number',
+    'order_confirmation', // template name
+    'en_US',              // language (optional, defaults to en_US)
+    [/* template components, optional */]
+);
+
+// Check delivery status using the message slug returned when sending
+$response = $service->getWhatsAppMessageStatus('message-slug');
+```
+
 ### Contact Verification
 
 #### Generic Verification Method
